@@ -1,2 +1,377 @@
-# Autosaad
-AutoSaad – Automotive Parts Encyclopedia
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AutoSaad - Encyclopédie Automobile</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Arial,sans-serif;
+  background:#f3f6fa;
+  color:#172337;
+}
+header{
+  background:#101d32;
+  color:white;
+  padding:22px 6%;
+}
+nav{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:15px;
+}
+.logo{font-size:28px;font-weight:bold;color:#36a5ff}
+.logo span{color:white}
+select{
+  padding:10px;
+  border-radius:8px;
+  border:0;
+  font-size:15px;
+}
+.hero{
+  background:linear-gradient(120deg,#101d32dd,#173f65dd),
+  url('https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=1400');
+  background-size:cover;
+  background-position:center;
+  color:white;
+  padding:75px 7%;
+  text-align:center;
+}
+.hero h1{font-size:42px;margin-bottom:15px}
+.hero p{font-size:18px;margin-bottom:25px}
+.search{
+  max-width:600px;
+  margin:auto;
+  display:flex;
+  gap:8px;
+}
+.search input{
+  flex:1;
+  padding:16px;
+  border:0;
+  border-radius:8px;
+  font-size:16px;
+}
+.search button{
+  background:#1685ed;
+  color:white;
+  border:0;
+  padding:15px 22px;
+  border-radius:8px;
+  cursor:pointer;
+}
+main{padding:35px 6%}
+h2{margin-bottom:22px;font-size:27px}
+.categories{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-bottom:28px;
+}
+.categories button{
+  border:1px solid #d5dfeb;
+  background:white;
+  padding:12px 17px;
+  border-radius:25px;
+  cursor:pointer;
+  font-size:14px;
+}
+.categories button.active,
+.categories button:hover{
+  background:#167de0;
+  color:white;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:22px;
+}
+.card{
+  background:white;
+  border-radius:13px;
+  overflow:hidden;
+  box-shadow:0 4px 16px #182b4210;
+  transition:.2s;
+}
+.card:hover{transform:translateY(-4px)}
+.card img{
+  width:100%;
+  height:165px;
+  object-fit:cover;
+  background:#dce5ef;
+}
+.card-content{padding:18px}
+.card h3{margin-bottom:10px;font-size:19px}
+.card p{color:#64748b;line-height:1.6;font-size:14px}
+.tag{
+  display:inline-block;
+  background:#e6f2ff;
+  color:#167de0;
+  padding:6px 10px;
+  border-radius:20px;
+  margin-bottom:12px;
+  font-size:12px;
+}
+.details{
+  margin-top:15px;
+  background:#13243c;
+  color:white;
+  border:0;
+  border-radius:7px;
+  padding:11px 15px;
+  cursor:pointer;
+  width:100%;
+}
+.extra{
+  display:none;
+  margin-top:12px;
+  padding:12px;
+  background:#f1f6fc;
+  border-radius:8px;
+  font-size:14px;
+  line-height:1.6;
+}
+footer{
+  background:#101d32;
+  color:white;
+  text-align:center;
+  padding:30px;
+  margin-top:50px;
+}
+footer span{color:#36a5ff}
+#count{color:#64748b;margin-bottom:20px}
+@media(max-width:600px){
+ .hero h1{font-size:30px}
+ .hero{padding:55px 5%}
+ .search{flex-direction:column}
+ .search button{width:100%}
+}
+</style>
+</head>
+<body>
+<header>
+<nav>
+  <div class="logo">🚘 Auto<span>Saad</span></div>
+  <select id="language" onchange="changeLanguage()">
+    <option value="fr">🇫🇷 Français</option>
+    <option value="en">🇬🇧 English</option>
+    <option value="ar">🇲🇦 العربية</option>
+  </select>
+</nav>
+</header>
+<section class="hero">
+  <h1 id="title">Encyclopédie Automobile</h1>
+  <p id="subtitle">Découvrez les pièces de votre voiture et comprenez leur fonctionnement.</p>
+  <div class="search">
+    <input id="search" type="text"
+    placeholder="Rechercher une pièce automobile..."
+    oninput="renderParts()">
+    <button onclick="renderParts()" id="searchBtn">Rechercher</button>
+  </div>
+</section>
+<main>
+  <h2 id="catalogTitle">Catalogue des pièces automobiles</h2>
+  <div class="categories" id="categories"></div>
+  <p id="count"></p>
+  <div class="grid" id="parts"></div>
+</main>
+<footer>
+  <h2>🚘 Auto<span>Saad</span></h2>
+  <p id="footerText">Votre encyclopédie automobile en ligne.</p>
+  <p style="margin-top:12px">© 2026 AutoSaad</p>
+</footer>
+<script>
+const photos = {
+ engine:"https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=700",
+ brakes:"https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=700",
+ car:"https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=700",
+ electrical:"https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=700"
+};
+const data = [
+{
+cat:"engine",icon:"⚙️",photo:"engine",
+fr:["Moteur","Le moteur transforme l'énergie du carburant ou de l'électricité en mouvement.","Il permet à la voiture de se déplacer.","Moteur"],
+en:["Engine","The engine converts fuel or electrical energy into motion.","It makes the vehicle move.","Engine"],
+ar:["المحرك","يحوّل المحرك طاقة الوقود أو الكهرباء إلى حركة.","يسمح للسيارة بالسير.","المحرك"]
+},
+{
+cat:"engine",icon:"🔩",photo:"engine",
+fr:["Piston","Pièce mobile qui se déplace dans le cylindre.","Il transmet la force de combustion au vilebrequin.","Moteur"],
+en:["Piston","A moving part inside the cylinder.","It transfers combustion force to the crankshaft.","Engine"],
+ar:["المكبس","قطعة متحركة داخل الأسطوانة.","ينقل قوة الاحتراق إلى عمود المرفق.","المحرك"]
+},
+{
+cat:"engine",icon:"🌡️",photo:"engine",
+fr:["Radiateur","Échangeur thermique du système de refroidissement.","Il aide à maintenir une température correcte du moteur.","Moteur"],
+en:["Radiator","A heat exchanger in the cooling system.","It helps keep the engine at the correct temperature.","Engine"],
+ar:["المبرد","جزء من نظام تبريد المحرك.","يساعد على الحفاظ على درجة حرارة المحرك المناسبة.","المحرك"]
+},
+{
+cat:"engine",icon:"💨",photo:"engine",
+fr:["Filtre à air","Filtre qui nettoie l'air entrant dans le moteur.","Il retient la poussière et les impuretés.","Moteur"],
+en:["Air filter","Filters the air entering the engine.","It traps dust and impurities.","Engine"],
+ar:["مرشح الهواء","ينقي الهواء الداخل إلى المحرك.","يمنع دخول الغبار والشوائب.","المحرك"]
+},
+{
+cat:"brakes",icon:"🛑",photo:"brakes",
+fr:["Disque de frein","Disque métallique fixé à la roue.","Il participe au ralentissement de la voiture avec les plaquettes.","Freinage"],
+en:["Brake disc","A metal disc attached to the wheel.","It works with the brake pads to slow the car.","Brakes"],
+ar:["قرص الفرامل","قرص معدني متصل بالعجلة.","يعمل مع بطانات الفرامل لإبطاء السيارة.","الفرامل"]
+},
+{
+cat:"brakes",icon:"🔴",photo:"brakes",
+fr:["Plaquettes de frein","Éléments de friction du système de freinage.","Elles pressent le disque pour ralentir la roue.","Freinage"],
+en:["Brake pads","Friction components of the braking system.","They press against the disc to slow the wheel.","Brakes"],
+ar:["بطانات الفرامل","أجزاء احتكاك في نظام الفرامل.","تضغط على القرص لإبطاء العجلة.","الفرامل"]
+},
+{
+cat:"brakes",icon:"💧",photo:"brakes",
+fr:["Liquide de frein","Liquide hydraulique du circuit de freinage.","Il transmet la pression exercée sur la pédale.","Freinage"],
+en:["Brake fluid","Hydraulic fluid in the braking system.","It transfers pressure from the brake pedal.","Brakes"],
+ar:["سائل الفرامل","سائل هيدروليكي في نظام الفرامل.","ينقل الضغط الناتج عن دواسة الفرامل.","الفرامل"]
+},
+{
+cat:"transmission",icon:"⚙️",photo:"car",
+fr:["Boîte de vitesses","Ensemble mécanique qui sélectionne les rapports.","Elle adapte la vitesse et le couple transmis aux roues.","Transmission"],
+en:["Gearbox","A mechanical assembly that selects gears.","It adjusts speed and torque delivered to the wheels.","Transmission"],
+ar:["علبة السرعات","مجموعة ميكانيكية لاختيار السرعات.","تضبط السرعة والعزم المنقول إلى العجلات.","ناقل الحركة"]
+},
+{
+cat:"transmission",icon:"🔧",photo:"car",
+fr:["Embrayage","Mécanisme qui relie ou sépare le moteur de la transmission.","Il permet notamment de changer de vitesse.","Transmission"],
+en:["Clutch","Mechanism connecting or disconnecting the engine from the transmission.","It allows the driver to change gears.","Transmission"],
+ar:["القابض","آلية تربط المحرك بناقل الحركة أو تفصله عنه.","يسمح بتغيير السرعات.","ناقل الحركة"]
+},
+{
+cat:"suspension",icon:"🔩",photo:"car",
+fr:["Amortisseur","Élément du système de suspension.","Il limite les mouvements de la carrosserie et améliore le confort.","Suspension"],
+en:["Shock absorber","A component of the suspension system.","It controls body movement and improves comfort.","Suspension"],
+ar:["ممتص الصدمات","جزء من نظام التعليق.","يحد من اهتزاز السيارة ويحسن الراحة.","نظام التعليق"]
+},
+{
+cat:"electrical",icon:"🔋",photo:"electrical",
+fr:["Batterie","Dispositif qui stocke l'énergie électrique.","Elle alimente les équipements et aide au démarrage.","Électricité"],
+en:["Battery","A device that stores electrical energy.","It powers electrical equipment and helps start the vehicle.","Electrical"],
+ar:["البطارية","جهاز يخزن الطاقة الكهربائية.","يغذي الأجهزة ويساعد على تشغيل السيارة.","الكهرباء"]
+},
+{
+cat:"electrical",icon:"⚡",photo:"electrical",
+fr:["Alternateur","Générateur électrique entraîné par le moteur.","Il recharge la batterie lorsque le moteur fonctionne.","Électricité"],
+en:["Alternator","An electrical generator driven by the engine.","It charges the battery while the engine runs.","Electrical"],
+ar:["المولد الكهربائي","مولد كهربائي يعمل بواسطة المحرك.","يعيد شحن البطارية أثناء تشغيل المحرك.","الكهرباء"]
+}
+];
+const labels = {
+ fr:{
+  all:"Toutes",engine:"Moteur",brakes:"Freinage",
+  transmission:"Transmission",suspension:"Suspension",
+  electrical:"Électricité",
+  title:"Encyclopédie Automobile",
+  subtitle:"Découvrez les pièces de votre voiture et comprenez leur fonctionnement.",
+  search:"Rechercher",placeholder:"Rechercher une pièce automobile...",
+  catalog:"Catalogue des pièces automobiles",
+  more:"Voir les détails",less:"Fermer les détails",
+  function:"Fonction",empty:"Aucune pièce trouvée.",
+  footer:"Votre encyclopédie automobile en ligne.",
+  count:"pièces trouvées"
+ },
+ en:{
+  all:"All",engine:"Engine",brakes:"Brakes",
+  transmission:"Transmission",suspension:"Suspension",
+  electrical:"Electrical",
+  title:"Automotive Encyclopedia",
+  subtitle:"Discover car parts and understand how they work.",
+  search:"Search",placeholder:"Search for a car part...",
+  catalog:"Automotive Parts Catalog",
+  more:"View details",less:"Close details",
+  function:"Function",empty:"No parts found.",
+  footer:"Your online automotive encyclopedia.",
+  count:"parts found"
+ },
+ ar:{
+  all:"الكل",engine:"المحرك",brakes:"الفرامل",
+  transmission:"ناقل الحركة",suspension:"التعليق",
+  electrical:"الكهرباء",
+  title:"موسوعة السيارات",
+  subtitle:"اكتشف قطع سيارتك وتعرّف على طريقة عملها.",
+  search:"بحث",placeholder:"ابحث عن قطعة في السيارة...",
+  catalog:"كتالوج قطع السيارات",
+  more:"عرض التفاصيل",less:"إغلاق التفاصيل",
+  function:"الوظيفة",empty:"لم يتم العثور على قطع.",
+  footer:"موسوعتك للسيارات عبر الإنترنت.",
+  count:"قطعة موجودة"
+ }
+};
+let lang="fr";
+let category="all";
+function changeLanguage(){
+ lang=document.getElementById("language").value;
+ document.documentElement.lang=lang;
+ document.documentElement.dir=lang==="ar"?"rtl":"ltr";
+ const t=labels[lang];
+ document.getElementById("title").textContent=t.title;
+ document.getElementById("subtitle").textContent=t.subtitle;
+ document.getElementById("searchBtn").textContent=t.search;
+ document.getElementById("search").placeholder=t.placeholder;
+ document.getElementById("catalogTitle").textContent=t.catalog;
+ document.getElementById("footerText").textContent=t.footer;
+ renderCategories();
+ renderParts();
+}
+function renderCategories(){
+ const t=labels[lang];
+ const cats=["all","engine","brakes","transmission","suspension","electrical"];
+ document.getElementById("categories").innerHTML=cats.map(c=>
+ `<button class="${category===c?'active':''}" onclick="setCategory('${c}')">${t[c]}</button>`
+ ).join("");
+}
+function setCategory(c){
+ category=c;
+ renderCategories();
+ renderParts();
+}
+function renderParts(){
+ const t=labels[lang];
+ const query=document.getElementById("search").value.toLowerCase();
+ const filtered=data.filter(p=>{
+  const item=p[lang];
+  const text=item.join(" ").toLowerCase();
+  return (category==="all"||p.cat===category)&&text.includes(query);
+ });
+ document.getElementById("count").textContent=
+ filtered.length+" "+t.count;
+ document.getElementById("parts").innerHTML=filtered.length?
+ filtered.map((p,i)=>{
+  const item=p[lang];
+  return `
+  <article class="card">
+   <img src="${photos[p.photo]}" alt="${item[0]}"
+   onerror="this.style.display='none'">
+   <div class="card-content">
+    <span class="tag">${t[p.cat]}</span>
+    <h3>${p.icon} ${item[0]}</h3>
+    <p>${item[1]}</p>
+    <button class="details" onclick="toggleDetails(this)">
+     ${t.more}
+    </button>
+    <div class="extra">
+     <strong>${t.function} :</strong><br>
+     ${item[2]}
+    </div>
+   </div>
+  </article>`;
+ }).join(""):`<p>${t.empty}</p>`;
+}
+function toggleDetails(button){
+ const extra=button.nextElementSibling;
+ const open=extra.style.display==="block";
+ extra.style.display=open?"none":"block";
+ button.textContent=open?labels[lang].more:labels[lang].less;
+}
+changeLanguage();
+</script>
+</body>
+</html>
